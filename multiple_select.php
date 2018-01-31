@@ -1,0 +1,335 @@
+<?php
+header("Pragma:no-cache");
+header("Cache-control:no-cache");
+?>
+<html>
+    <header>
+        <title>MultipleSelect</title>
+        <script type="text/javascript" src="assets/js/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="assets/js/vue.js"></script>
+        <script type="text/javascript" src="assets/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="assets/css/multiple_select.css">
+        <link rel="stylesheet" type="text/css" href="assets/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    </header>
+
+    <div class="container" id="app">
+        <br>
+        <div class="row">
+            <div class="vtop">
+                <span style="font-weight:bold">Default columns</span><br><br>
+                <select v-model="left_selected" id="left_select" class="form-control" style="height:350px" multiple>
+                    <option v-cloak v-for="column in default_columns" v-bind:value="column.name">
+                        {{ column.title}}
+                    </option>
+                </select>
+            </div>
+            <div class="vcenter">
+                <button type="button" class="btn btn-default" aria-label="Left Align All" v-on:click="push_all()">
+                    <span class="glyphicon glyphicon-fast-forward" aria-hidden="true"></span>
+                </button>
+                <br>
+                <button type="button" class="btn btn-default" aria-label="Right Align" v-on:click="push()">
+                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                </button><br>
+                <button type="button" class="btn btn-default" aria-label="Right Align All" v-on:click="remove()">
+                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                </button><br>
+                <button type="button" class="btn btn-default" aria-label="Left Align" v-on:click="remove_all()" :disabled="has_mandatory()">
+                    <span class="glyphicon glyphicon-fast-backward" aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="vtop">
+                <span style="font-weight:bold">Your customized columns</span>
+                <!--<button type="button" class="btn btn-default" style="float:right" aria-label="Botton Save" v-on:click="save()">
+                    <span aria-hidden="true">SAVE</span>
+                </button>-->
+                <br><br>
+                <select v-model="right_selected" id="right_select" class="form-control" style="height:350px" multiple>
+                    <option v-cloak v-for="column in like_columns" v-bind:value="column.name">
+                        {{column.title}}
+                    </option>
+                </select>
+                <!--
+                      <span>Orig_Selected: @{{left_ selected | json }}</span><br>
+                          <span>New_Selected: @{{right_ selected | json }}</span><br>-->
+                <span style="color:red" v-cloak>{{error_msg}}</span>
+
+            </div>
+            <div class="vcenter">
+                <button type="button" class="btn btn-default" aria-label="Top Align" v-on:click="up_top()">
+                    <span class="glyphicon glyphicon-triangle-top" aria-hidden="true"></span>
+                </button><br>
+                <button type="button" class="btn btn-default" aria-label="Up Align" v-on:click="up($index)">
+                    <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>
+                </button><br>
+                <button type="button" class="btn btn-default" aria-label="Down Align" v-on:click="down()">
+                    <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+                </button><br>
+                <button type="button" class="btn btn-default" aria-label="Bottom Align" v-on:click="down_bottom()"> <!--:disabled="!isset_man()"-->
+                    <span class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
+                </button>
+                <br>
+            </div>
+        </div>
+    </div>
+</html>
+
+<script type="text/javascript">
+    var vw = new Vue({
+        el: "#app",
+        data: {
+            appdef: {},
+            columns: [],
+            default_columns: [
+                {"title":"item1","name":"item1_v"},
+                {"title":"item2","name":"item2_v"},
+                {"title":"item3","name":"item3_v"}
+            ],
+            like_columns: [],
+            mandatory_columns: [],
+            left_selected: [],
+            right_selected: [],
+            error_msg: '',
+            notice: ''
+        },
+        methods: {
+            has_mandatory: function() {
+                if (this.mandatory_columns.length != 0) {
+                    return 'disabled';
+                } else {
+                    return;
+                }
+            },
+            push: function() {
+                if (this.left_selected.length == 0)
+                    return;
+                this.error_msg = "";
+                //Get key of left_selected item
+                var First = true;
+                for (var i = 0; i < this.left_selected.length; i++) {
+                    for (var j = 0; j < this.default_columns.length; j++) {
+                        if (this.left_selected[i] == this.default_columns[j].name) {
+                            if (First == true) {
+                                if (j == 0)
+                                    new_selected_item = j;
+                                else
+                                    new_selected_item = j - 1;
+                                First = false;
+                            } else {
+                                First = false;
+                            }
+
+                            //push:left to right
+                            this.like_columns.push(this.default_columns[j]);
+                            //remove left
+                            this.default_columns.splice(j, 1);
+                        }
+                    }
+                }
+
+                this.right_selected = this.left_selected;
+                //change left_selected to previous item
+                if (this.default_columns.length != 0)
+                    this.left_selected = [this.default_columns[new_selected_item].name];
+                else
+                    this.default_columns.length = [];
+            },
+            remove: function(){
+                if(this.right_selected.length==0){
+                    //this.error_msg = "Choose One item at least";
+                    return;
+                }
+                this.error_msg = "";
+                //Check whethor include mandatory column
+                for(var j=0; j< this.mandatory_columns.length ; j++){
+                    for(var i=0; i< this.right_selected.length;i++){
+                        if(this.right_selected[i]==this.mandatory_columns[j]){
+                            this.error_msg = "Mandatory columns doesn't allow to be removed";
+                            return;
+                        }
+                    }
+                }
+
+                //Get key of right_selected item
+                var First = true;
+                for (var i=0; i<this.right_selected.length; i++){
+                    for (var j=0; j<this.like_columns.length; j++){
+                        if (this.right_selected[i] == this.like_columns[j].name){
+                            if(First==true){
+                                if(j==0)
+                                    new_selected_item = j;
+                                else
+                                    new_selected_item = j-1;
+                                First =false;
+                            }else{
+                                First = false;
+                            }
+                            //push:right to left
+                            this.default_columns.push(this.like_columns[j]);
+                            //remove right
+                            this.like_columns.splice(j,1);
+                        }
+                    }
+                }
+                this.left_selected = this.right_selected;
+                //change right_selected to previous item
+                if(this.like_columns.length!=0)
+                    this.right_selected = [this.like_columns[new_selected_item].name];
+                else
+                    this.right_selected = [];
+            },
+            push_all : function(){
+                this.error_msg = "";
+                //push default_columns to like_columns and right selected
+                this.like_columns = this.like_columns.concat(this.default_columns);
+                //push left to right selected
+                for(var i=0;i<this.default_columns.length;i++){
+                    this.right_selected.$set(i,this.default_columns[i].name);
+                }
+                //remove default_columns and left selected
+                this.default_columns=[];
+                this.left_selected = [];
+            },
+            remove_all : function(){
+                this.error_msg = "";
+                if(this.right_selected.length==0){
+                    //this.error_msg = "Choose One item at least";
+                    return;
+                }
+
+                //Check whethor include mandatory column
+                for(var j=0; j< this.mandatory_columns.length ; j++){
+                    for(var i=0; i< this.like_columns.length;i++){
+                        if(this.mandatory_columns[j]==this.like_columns[i]['name']){
+                            this.error_msg = "mandatory column don't allow to remove";
+                            return;
+                        }
+                    }
+                }
+
+                //push like_columns to  default_columns and left selected
+                this.default_columns = this.default_columns.concat(this.like_columns);
+                //push right to left selected
+                for(var i=0;i<this.like_columns.length;i++){
+                    this.left_selected.$set(i,this.like_columns[i].name);
+                }
+                //remove like_columns and right selected
+                this.like_columns=[];
+                this.right_selected = [];
+            },
+            up: function(){
+                if(this.right_selected.length==1){
+                    this.error_msg = "";
+                    //Get key of right_selected item
+                    for (var i=0; i<this.like_columns.length; i++){
+                        if (this.right_selected[0]== this.like_columns[i].name){
+                            //index 0 is top one
+                            if(i==0)
+                                return;
+                            var tmp;
+                            tmp = this.like_columns[i];
+                            this.like_columns.$set(i,this.like_columns[i-1]);
+                            this.like_columns.$set(i-1,tmp);
+                            break;
+                        }
+                    }
+                }else{
+                    this.error_msg = "Change order only can choose 1 item.";
+                }
+            },
+            down: function(){
+                if(this.right_selected.length==1){
+                    this.error_msg = "";
+                    //Get key of right_selected item
+                    for (var i=0; i<this.like_columns.length; i++){
+                        if (this.right_selected[0]== this.like_columns[i].name){
+                            //index botton is last one
+                            if(i==this.like_columns.length-1)
+                                return;
+                            var tmp;
+                            tmp = this.like_columns[i];
+                            this.like_columns.$set(i,this.like_columns[i+1]);
+                            this.like_columns.$set(i+1,tmp);
+                            break;
+                        }
+                    }
+                }else{
+                    this.error_msg = "Change order only can choose 1 item.";
+                }
+            },
+            up_top: function(){
+                if(this.right_selected.length==1){
+                    this.error_msg = "";
+                    //Get key of right_selected item
+                    for (var i=0; i<this.like_columns.length; i++){
+                        if (this.right_selected[0]== this.like_columns[i].name){
+                            //index 0 is top one
+                            if(i==0)
+                                return;
+                            var tmp = this.like_columns[i];
+                            this.like_columns.splice(i,1);
+                            this.like_columns.unshift(tmp);
+                            break;
+                        }
+                    }
+                }else{
+                    this.error_msg = "Change order only can choose 1 item.";
+                }
+            },
+            down_bottom: function(){
+                if(this.right_selected.length==1){
+                    this.error_msg = "";
+                    //Get key of right_selected item
+                    for (var i=0; i<this.like_columns.length; i++){
+                        if (this.right_selected[0]== this.like_columns[i].name){
+                            //index botton is last one
+                            if(i==this.like_columns.length-1)
+                                return;
+                            var tmp = this.like_columns[i];
+                            this.like_columns.splice(i,1);
+                            this.like_columns.push(tmp);
+                            break;
+                        }
+                    }
+                }else{
+                    this.error_msg = "Change order only can choose 1 item.";
+                }
+            },
+            save: function(){
+                if(this.like_columns.length==0){
+                    this.error_msg = "Your Like columns cann't empty.";
+                }else{
+                    this.error_msg = "";
+                    //Clean Up like_columns for only including name
+                    var columns_ary = [];
+                    for(var i=0;i<this.like_columns.length;i++){
+                        columns_ary.push(this.like_columns[i].name);
+                    }
+                    var data = {
+                        "like_columns" : columns_ary,
+                    };
+
+                    var self = this;
+                    this.$http.post('/appdef/'+this.proj+'/report_setting',data).then((response) => {
+
+                        if (response.body.status === 'ok'){
+                        //self.error_msg = "Updated Successfully"
+                        window.location.href = "/bcapp/"+self.proj;
+                        //this.$http.get('/bcapp/'+this.proj).then((response2)=>{
+                        //var like_columns = columns_ary;
+                        //self.$set('columns',new_columns);
+                        //self.$set('activeTabIdx',0);
+                        //});
+
+                    }else{
+                        //self.error_msg = "Updated Failed"
+                    }
+                });
+                }
+            }
+        },
+        ready : function() {
+        }
+    });
+
+</script>
