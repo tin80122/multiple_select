@@ -87,8 +87,7 @@ save: function(){
 ```
 
 ## live demo
-<iframe src="https://tin80122.github.io/multiple_select/index.html"></iframe>
-<h2>Example of code</h2>
+<a href="https://tin80122.github.io/multiple_select/multiple_select.html">Go to see demo page</a>
 
 ## Authors
 
