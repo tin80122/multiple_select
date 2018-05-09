@@ -1,7 +1,3 @@
-<?php
-header("Pragma:no-cache");
-header("Cache-control:no-cache");
-?>
 <html>
     <header>
         <title>MultipleSelect</title>
@@ -294,7 +290,7 @@ header("Cache-control:no-cache");
                 }else{
                     this.error_msg = "Change order only can choose 1 item.";
                 }
-            },
+            }/*,
             save: function(){
                 if(this.like_columns.length==0){
                     this.error_msg = "Your Like columns cann't empty.";
@@ -308,25 +304,10 @@ header("Cache-control:no-cache");
                     var data = {
                         "like_columns" : columns_ary,
                     };
-
-                    var self = this;
-                    this.$http.post('/appdef/'+this.proj+'/report_setting',data).then((response) => {
-
-                        if (response.body.status === 'ok'){
-                        //self.error_msg = "Updated Successfully"
-                        window.location.href = "/bcapp/"+self.proj;
-                        //this.$http.get('/bcapp/'+this.proj).then((response2)=>{
-                        //var like_columns = columns_ary;
-                        //self.$set('columns',new_columns);
-                        //self.$set('activeTabIdx',0);
-                        //});
-
                     }else{
                         //self.error_msg = "Updated Failed"
                     }
-                });
-                }
-            }
+                });*/
         },
         ready : function() {
         }
