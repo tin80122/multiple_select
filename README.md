@@ -87,7 +87,7 @@ save: function(){
 ```
 
 ## live demo
-<a href="https://tin80122.github.io/multiple_select/multiple_select.html">Go to see demo page</a>
+<a href="https://tin80122.github.io/multiple_select/multiple_select.html" target="_blank">Go to see demo page</a>
 
 ## Authors
 
